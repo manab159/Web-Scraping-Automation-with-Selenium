@@ -1,0 +1,113 @@
+# Web-Scraping Code
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+import time
+import pandas as pd
+
+# Set pandas display options
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+pd.set_option('display.width', None)
+
+# Product name placeholder
+product_name = "<<Enter product name here>>"
+
+# Geography pin code placeholder
+geo_pin_code = "<<Enter pin code here>>"
+
+# Initialize the web driver
+driver = webdriver.Chrome()
+
+# Construct the URL
+url = f"https://<<enter website here>>?query={product_name}"
+driver.get(url)
+
+# Pause for loading
+time.sleep(2)
+
+# Click action
+actions = ActionChains(driver)
+actions.move_by_offset(1, 2).click().perform()
+
+time.sleep(2)
+
+# Click location button
+location_button = driver.find_element(By.CLASS_NAME, "<<location_button_class_name>>")
+location_button.click()
+
+time.sleep(2)
+
+# Input address
+address_input = driver.find_element(By.XPATH, "//input[@placeholder='<<input_placeholder_text>>']")
+address_input.send_keys(geo_pin_code)
+
+# Wait for suggestions
+time.sleep(2)
+
+# Click the first option
+first_option = driver.find_elements(By.XPATH, "//h4[@class='<<first_option_class_name>>']")[0]
+first_option.click()
+
+# Wait for the confirm button
+time.sleep(2)
+
+# Click confirm
+confirm_button = driver.find_element(By.XPATH, "//button[@data-testid='<<confirm_button_test_id>>']")
+confirm_button.click()
+
+# Pause before proceeding
+time.sleep(2)
+
+# Click action again
+actions.move_by_offset(1, 2).click().perform()
+
+time.sleep(2)
+
+# Find product containers
+product_containers = driver.find_elements(By.CSS_SELECTOR, 'div.<<placeholder>>]')
+
+# Check if products are found
+if not product_containers:
+    print("No products found.")
+else:
+    # Initialize lists for product data
+    names = []
+    prices = []
+    mrps = []
+    sizes = []
+
+    # Loop through each product container
+    for product in product_containers:
+        try:
+            # Extract data
+            name = product.find_element(By.CSS_SELECTOR, 'h5[<<placeholder>>]').text
+            names.append(name)
+
+            price = product.find_element(By.CSS_SELECTOR, 'h4.font-heading[<<placeholder>>]').text
+            prices.append(price)
+
+            mrp = product.find_element(By.CSS_SELECTOR, 'p.<<placeholder>>').text
+            mrps.append(mrp)
+
+            size = product.find_element(By.XPATH, ".//span[<<placeholder>>]").text
+            sizes.append(size)
+
+        except Exception as e:
+            print(f"An error occurred while processing a product: {e}")
+
+    # Create a DataFrame
+    df = pd.DataFrame({
+        'Product Name': names,
+        'Product Size': sizes,
+        'Product Price': prices,
+        'Product MRP': mrps
+    })
+
+    # Print the DataFrame
+    print(df)
+
+# Close the browser
+driver.quit()
